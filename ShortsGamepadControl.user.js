@@ -219,6 +219,7 @@ const Button_t = {
 
         Gamepad.buttons.map(e => e.pressed).forEach((isPressed, buttonIndex) => {
             if (isPressed) {
+                //console.log(`[GPC] Pressed Button Index: ${buttonIndex}`);
                 // Prevent multiple triggering
                 if (g_pressedButtonIndex == undefined) {
                     g_pressedButtonIndex = buttonIndex;
