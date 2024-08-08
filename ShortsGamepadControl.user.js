@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      1.0.1
+// @version      1.0.2
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -15,6 +15,7 @@
 let g_gamepadIndex;
 let g_pressedButtonIndex;
 const g_seekTime = 1;
+const g_vibrate = true;
 
 // Buttons enum
 const Button_t = {
@@ -99,6 +100,17 @@ const Button_t = {
         return true;
     };
 
+    function Vibrate() {
+        if (!g_vibrate) { return };
+        const Gamepad = navigator.getGamepads()[g_gamepadIndex];
+
+        Gamepad.vibrationActuator.playEffect('dual-rumble', {
+            duration: 150, // Duration in milliseconds
+            weakMagnitude: 1, // intensity (0-1) of the small ERM
+            strongMagnitude: 1 // intesity (0-1) of the bigger ERM
+        });
+    };
+
     //////////////////////////////
     // Player-Related Functions //
     //////////////////////////////
@@ -108,6 +120,7 @@ const Button_t = {
         if (!video) { return };
 
         video.paused ? video.play() : video.pause();
+        Vibrate();
     };
 
     function Player_Next() {
@@ -118,6 +131,7 @@ const Button_t = {
             behavior: "smooth",
             block: "end",
         });
+        Vibrate();
     };
 
     function Player_Prev() {
@@ -128,6 +142,7 @@ const Button_t = {
             behavior: "smooth",
             block: "end",
         });
+        Vibrate();
     };
 
     function Player_Like() {
@@ -135,6 +150,7 @@ const Button_t = {
         if (LikeButton) {
             LikeButton.click();
         };
+        Vibrate();
     };
 
     function Player_Dislike() {
@@ -142,6 +158,7 @@ const Button_t = {
         if (DisLikeButton) {
             DisLikeButton.click();
         };
+        Vibrate();
     };
 
     function Player_SeekForward() {
@@ -149,6 +166,7 @@ const Button_t = {
         if (!video) { return };
 
         SetTime(video, +g_seekTime);
+        Vibrate();
     };
 
     function Player_SeekBack() {
@@ -156,6 +174,7 @@ const Button_t = {
         if (!video) { return };
 
         SetTime(video, -g_seekTime);
+        Vibrate();
     };
 
     /////////////////////////////
@@ -177,7 +196,7 @@ const Button_t = {
 
     buttonBindings[Button_t.LB] = Player_SeekBack;
     buttonBindings[Button_t.RB] = Player_SeekForward;
-    
+
     buttonBindings[Button_t.LT] = Player_PlayPause;
     buttonBindings[Button_t.RT] = Player_PlayPause;
 
@@ -196,9 +215,9 @@ const Button_t = {
     setInterval(() => {
         if (g_gamepadIndex == undefined) { return };
 
-        const myGamepad = navigator.getGamepads()[g_gamepadIndex];
+        const Gamepad = navigator.getGamepads()[g_gamepadIndex];
 
-        myGamepad.buttons.map(e => e.pressed).forEach((isPressed, buttonIndex) => {
+        Gamepad.buttons.map(e => e.pressed).forEach((isPressed, buttonIndex) => {
             if (isPressed) {
                 // Prevent multiple triggering
                 if (g_pressedButtonIndex == undefined) {
