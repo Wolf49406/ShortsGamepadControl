@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      1.0.3
+// @version      1.0.4
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -14,7 +14,7 @@
 // Global objects
 let g_gamepadIndex;
 let g_pressedButtonIndex;
-const g_seekTime = 1;
+const g_seekTime = 3;
 const g_vibrate = true;
 const g_debug = false;
 
