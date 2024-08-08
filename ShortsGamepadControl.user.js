@@ -95,15 +95,13 @@ const Button_t = {
 
     // Tampermonkey's @match is such a headache
     function IsValidURL() {
-        let href = location.href;
-        if (!href || !href.includes("/shorts/")) { return false };
-        return true;
+        return location.href.startsWith(`https://www.youtube.com/shorts/`);
     };
 
     function Vibrate() {
         if (!g_vibrate) { return };
-        const Gamepad = navigator.getGamepads()[g_gamepadIndex];
 
+        const Gamepad = navigator.getGamepads()[g_gamepadIndex];
         Gamepad.vibrationActuator.playEffect('dual-rumble', {
             duration: 150, // Duration in milliseconds
             weakMagnitude: 1, // intensity (0-1) of the small ERM
@@ -213,10 +211,9 @@ const Button_t = {
     /////////////////////////
 
     setInterval(() => {
-        if (g_gamepadIndex == undefined) { return };
+        if (g_gamepadIndex == undefined || !IsValidURL()) { return };
 
         const Gamepad = navigator.getGamepads()[g_gamepadIndex];
-
         Gamepad.buttons.map(e => e.pressed).forEach((isPressed, buttonIndex) => {
             if (isPressed) {
                 //console.log(`[GPC] Pressed Button Index: ${buttonIndex}`);
@@ -238,7 +235,6 @@ const Button_t = {
     ////////////////////
 
     window.addEventListener('gamepadconnected', (event) => {
-        if (!IsValidURL()) { return };
         console.log(`[GPC] Gamepad Connected \n[GPC] Index: ${event.gamepad.index} \n[GPC] Name: ${event.gamepad.id}`);
         g_gamepadIndex = event.gamepad.index;
     });
