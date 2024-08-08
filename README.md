@@ -1,4 +1,4 @@
-# ShortsGamepadControl
+# :video_game: ShortsGamepadControl :video_game:
 Take a Full Control on Youtube Shorts with Gamepad
 
 # Hotkeys (xbox gamepad)
