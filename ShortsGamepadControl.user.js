@@ -175,6 +175,9 @@ const Button_t = {
     buttonBindings[Button_t.ARROW_LEFT] = Player_SeekBack;
     buttonBindings[Button_t.ARROW_RIGHT] = Player_SeekForward;
 
+    buttonBindings[Button_t.LB] = Player_SeekBack;
+    buttonBindings[Button_t.RB] = Player_SeekForward;
+    
     buttonBindings[Button_t.LT] = Player_PlayPause;
     buttonBindings[Button_t.RT] = Player_PlayPause;
 
