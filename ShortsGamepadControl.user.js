@@ -146,17 +146,17 @@ const Button_t = {
 
     function Player_Like() {
         let LikeButton = GetLikeButton(FindCurrentContainer());
-        if (LikeButton) {
-            LikeButton.click();
-        };
+        if (!LikeButton) { return };
+        
+        LikeButton.click();
         Vibrate();
     };
 
     function Player_Dislike() {
         let DisLikeButton = GetDisLikeButton(FindCurrentContainer());
-        if (DisLikeButton) {
-            DisLikeButton.click();
-        };
+        if (!DisLikeButton) { return };
+
+        DisLikeButton.click();
         Vibrate();
     };
 
