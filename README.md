@@ -6,8 +6,8 @@ Take a Full Control on Youtube Shorts with Gamepad
 - X / Up: Previous Video  
 - B: Like  
 - Y: Dislike  
-- Left: SeekBack  
-- Right: SeekForward  
+- LB / Left: SeekBack  
+- RB / Right: SeekForward  
 - LT / RT: Play-Pause  
 
 # How To
