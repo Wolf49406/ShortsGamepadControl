@@ -16,6 +16,7 @@ let g_gamepadIndex;
 let g_pressedButtonIndex;
 const g_seekTime = 1;
 const g_vibrate = true;
+const g_debug = false;
 
 // Buttons enum
 const Button_t = {
@@ -216,7 +217,7 @@ const Button_t = {
         const Gamepad = navigator.getGamepads()[g_gamepadIndex];
         Gamepad.buttons.map(e => e.pressed).forEach((isPressed, buttonIndex) => {
             if (isPressed) {
-                //console.log(`[GPC] Pressed Button Index: ${buttonIndex}`);
+                if (g_debug) { console.log(`[GPC] Pressed Button Index: ${buttonIndex}`) };
                 // Prevent multiple triggering
                 if (g_pressedButtonIndex == undefined) {
                     g_pressedButtonIndex = buttonIndex;
