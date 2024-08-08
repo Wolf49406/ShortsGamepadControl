@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      1.0.2
+// @version      1.0.3
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
-// @icon         https://mitinogame.ru/favicon.ico
+// @icon         https://raw.githubusercontent.com/Wolf49406/ShortsGamepadControl/main/gamepad.png
 // @homepageURL  https://github.com/Wolf49406/ShortsGamepadControl
 // @updateURL    https://github.com/Wolf49406/ShortsGamepadControl/raw/main/ShortsGamepadControl.user.js
 // @downloadURL  https://github.com/Wolf49406/ShortsGamepadControl/raw/main/ShortsGamepadControl.user.js
