@@ -12,14 +12,14 @@ Take a Full Control on Youtube Shorts with Gamepad
 
 # Different Gamepad
 If you have different gamepad / buttons indexes:  
-- Enable [debugging](https://github.com/Wolf49406/ShortsGamepadControl/blob/28ea14e7b62d417336f74acd9227933bdd12c2a9/ShortsGamepadControl.user.js#L222)  
+- Enable debugging with _g_debug_ variable
 - Open browser's console
-- Press buttons
-- Change [default enums](https://github.com/Wolf49406/ShortsGamepadControl/blob/28ea14e7b62d417336f74acd9227933bdd12c2a9/ShortsGamepadControl.user.js#L21)
+- Press buttons on your gamepad
+- Edit default enum _Button_t_
 
 # Settings
-- [_g_seekTime_](https://github.com/Wolf49406/ShortsGamepadControl/blob/2ec5301e162c330dff13e93742dd811b3f4b1821/ShortsGamepadControl.user.js#L17) for _SeekBack_ and _SeekForward_ time  
-- [_g_vibrate_](https://github.com/Wolf49406/ShortsGamepadControl/blob/2ec5301e162c330dff13e93742dd811b3f4b1821/ShortsGamepadControl.user.js#L18) to enable/disable vibration feedback  
+- _g_seekTime_ for _SeekBack_ and _SeekForward_ time  
+- _g_vibrate_ to enable/disable vibration feedback  
 
 # How To
 - Install [Tampermonkey](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
