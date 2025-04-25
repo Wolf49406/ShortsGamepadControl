@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      1.0.4
+// @version      1.0.5
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -48,12 +48,12 @@ const Button_t = {
 
     // There is a bunch of DIVs with class="reel-video-in-sequence style-scope ytd-shorts";
     function FindCurrentContainer(offset = 0) {
-        let reels = document.getElementsByClassName("reel-video-in-sequence");
-        if (!reels) { return undefined };
+        const reels = document.getElementsByClassName("reel-video-in-sequence-new");
+        if (reels.length === 0) { return undefined };
 
         for (let i = 0; i < reels.length; i++) { // So we need to iterate throw them;
-            let isActive = reels[i].hasAttribute("is-active"); // To find active one.
-            if (!isActive) { continue };
+            let style_scope = reels[i].querySelector("#reel-video-renderer"); // to find active one.
+            if (!style_scope) { continue };
 
             return reels[i + offset];
         };
@@ -147,7 +147,7 @@ const Button_t = {
     function Player_Like() {
         let LikeButton = GetLikeButton(FindCurrentContainer());
         if (!LikeButton) { return };
-        
+
         LikeButton.click();
         Vibrate();
     };
