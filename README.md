@@ -8,7 +8,8 @@ Take a Full Control on Youtube Shorts with Gamepad
 - **Y**: Dislike  
 - **LB** / **Left**: SeekBack  
 - **RB** / **Right**: SeekForward  
-- **LT** / **RT**: Play-Pause  
+- **LT** / **RT**: Play-Pause
+- **START** / **SELECT**: Enter-Exit Fullscreen  
 
 # Different Gamepad
 If you have different gamepad / buttons indexes:  
