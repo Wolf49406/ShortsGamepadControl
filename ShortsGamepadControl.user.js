@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      1.0.5
+// @version      1.0.6
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -16,7 +16,7 @@ let g_gamepadIndex;
 let g_pressedButtonIndex;
 const g_seekTime = 3;
 const g_vibrate = true;
-const g_debug = false;
+const g_debug = true;
 
 // Buttons enum
 const Button_t = {
@@ -176,6 +176,14 @@ const Button_t = {
         Vibrate();
     };
 
+    function Player_Fullscreen() {
+        let video = GetCurrentVideo(FindCurrentContainer());
+        if (!video) { return };
+
+        document.fullscreenElement ? document.exitFullscreen() : video.requestFullscreen();
+        Vibrate();
+    };
+
     /////////////////////////////
     // Button-Binded Functions //
     /////////////////////////////
@@ -198,6 +206,9 @@ const Button_t = {
 
     buttonBindings[Button_t.LT] = Player_PlayPause;
     buttonBindings[Button_t.RT] = Player_PlayPause;
+
+    buttonBindings[Button_t.START] = Player_Fullscreen;
+    buttonBindings[Button_t.SELECT] = Player_Fullscreen;
 
     // Call Button-Binded Function
     function HandleButton(buttonIndex) {
