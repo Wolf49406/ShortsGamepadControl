@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      1.0.6.1
+// @version      1.0.7
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -94,6 +94,18 @@ const Button_t = {
         video.currentTime = currentTime + time;
     };
 
+    function SimulateKeyF() {
+        const event = new KeyboardEvent("keydown", {
+            key: "f",
+            code: "KeyF",
+            keyCode: 70,
+            which: 70,
+            bubbles: true,
+            cancelable: true,
+        });
+        document.dispatchEvent(event);
+    }
+
     // Tampermonkey's @match is such a headache
     function IsValidURL() {
         return location.href.startsWith(`https://www.youtube.com/shorts/`);
@@ -177,10 +189,7 @@ const Button_t = {
     };
 
     function Player_Fullscreen() {
-        let video = GetCurrentVideo(FindCurrentContainer());
-        if (!video) { return };
-
-        document.fullscreenElement ? document.exitFullscreen() : video.requestFullscreen();
+        SimulateKeyF();
         Vibrate();
     };
 
