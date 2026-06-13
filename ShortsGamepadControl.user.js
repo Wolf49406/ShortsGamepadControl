@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      1.0.7
+// @version      1.1.1
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -12,8 +12,13 @@
 // ==/UserScript==
 
 // Global objects
+let g_currentContainer;
+let g_currentVideo;
+let g_observer;
 let g_gamepadIndex;
 let g_pressedButtonIndex;
+
+// Config
 const g_seekTime = 3;
 const g_vibrate = true;
 const g_debug = false;
@@ -39,54 +44,67 @@ const Button_t = {
     HOME: 16,
 };
 
-(function() {
+(function () {
     'use strict';
 
     ///////////////////////
     // Helpers Functions //
     ///////////////////////
 
-    // There is a bunch of DIVs with class="reel-video-in-sequence style-scope ytd-shorts";
-    function FindCurrentContainer(offset = 0) {
-        const reels = document.getElementsByClassName("reel-video-in-sequence-new");
-        if (reels.length === 0) { return undefined };
+    function LOG(Message) {
+        console.error(`[GSC] ${Message}`);
+    }
 
-        for (let i = 0; i < reels.length; i++) { // So we need to iterate throw them;
-            let style_scope = reels[i].querySelector("#reel-video-renderer"); // to find active one.
-            if (!style_scope) { continue };
-
-            return reels[i + offset];
-        };
-
-        return undefined;
-    };
-
-    // An actual HTML5-video
     function GetCurrentVideo(Container) {
-        if (!Container) { return undefined };
+        if (!Container) {
+            LOG("GetCurrentVideo: !Container");
+            return undefined;
+        }
 
-        let video = Container.querySelector("#shorts-player > div.html5-video-container > video");
-        if (!video) { return undefined };
+        const video = Container.querySelector("#shorts-player > div.html5-video-container > video");
+        if (!video) {
+            LOG("GetCurrentVideo: !video");
+            return undefined;
+        }
 
         return video;
     };
 
     function GetLikeButton(Container) {
-        if (!Container) { return undefined };
+        if (!Container) {
+            LOG("GetLikeButton: !Container");
+            return undefined;
+        }
 
-        let button = Container.querySelector("#like-button > yt-button-shape > label > button > yt-touch-feedback-shape > div");
-        if (!button) { return undefined };
+        const button = Container.querySelector("#experiment-overlay > ytd-reel-player-overlay-renderer > yt-reel-player-overlay-view-model > div.ytReelPlayerOverlayViewModelActionsContainer > reel-action-bar-view-model > like-button-view-model > toggle-button-view-model > button-view-model > label > button > yt-touch-feedback-shape > div");
+
+        if (!button) {
+            LOG("GetLikeButton: !button");
+            return undefined;
+        }
 
         return button;
     };
 
     function GetDisLikeButton(Container) {
-        if (!Container) { return undefined };
+        if (!Container) {
+            LOG("GetDisLikeButton: !Container");
+            return undefined;
+        }
 
-        let button = Container.querySelector("#dislike-button > yt-button-shape > label > button > yt-touch-feedback-shape > div");
-        if (!button) { return undefined };
+        const button = Container.querySelector("#experiment-overlay > ytd-reel-player-overlay-renderer > yt-reel-player-overlay-view-model > div.ytReelPlayerOverlayViewModelActionsContainer > reel-action-bar-view-model > dislike-button-view-model > toggle-button-view-model > button-view-model > label > button > yt-touch-feedback-shape > div");
+        if (!button) {
+            LOG("GetDisLikeButton: !button");
+            return undefined;
+        }
 
         return button;
+    };
+
+    function GetLikesCount() {
+        const likesContainer = document.querySelector("#like-button > yt-button-shape > label > div > span");
+        const likesCount = likesContainer.text;
+        return likesCount;
     };
 
     function SetTime(video, time) {
@@ -115,11 +133,13 @@ const Button_t = {
         if (!g_vibrate) { return };
 
         const Gamepad = navigator.getGamepads()[g_gamepadIndex];
-        Gamepad.vibrationActuator.playEffect('dual-rumble', {
-            duration: 150, // Duration in milliseconds
-            weakMagnitude: 1, // intensity (0-1) of the small ERM
-            strongMagnitude: 1 // intesity (0-1) of the bigger ERM
-        });
+        if (Gamepad.vibrationActuator && Gamepad.vibrationActuator.playEffect) {
+            Gamepad.vibrationActuator.playEffect('dual-rumble', {
+                duration: 150, // Duration in milliseconds
+                weakMagnitude: 1, // intensity (0-1) of the small ERM
+                strongMagnitude: 1 // intesity (0-1) of the bigger ERM
+            });
+        }
     };
 
     //////////////////////////////
@@ -127,29 +147,67 @@ const Button_t = {
     //////////////////////////////
 
     function Player_PlayPause() {
-        let video = GetCurrentVideo(FindCurrentContainer());
-        if (!video) { return };
+        if (!g_currentVideo) {
+            LOG("Player_PlayPause: !g_currentVideo");
+            return;
+        }
 
-        video.paused ? video.play() : video.pause();
+        g_currentVideo.paused ? g_currentVideo.play() : g_currentVideo.pause();
         Vibrate();
     };
 
     function Player_Next() {
-        let Container = FindCurrentContainer(+1);
-        if (!Container) { return };
+        if (!g_currentContainer) {
+            LOG("Player_Next: !g_currentContainer");
+            return;
+        }
 
-        Container.scrollIntoView({
+        const nextId = parseInt(g_currentContainer.id) + 1;
+        if (isNaN(nextId)) {
+            LOG("Player_Next: isNaN(nextId)");
+            return;
+        }
+
+        const next = document.getElementById(nextId);
+        if (!next) {
+            LOG("Player_Next: !next");
+            return;
+        }
+
+        g_currentContainer = next;
+        g_currentVideo = GetCurrentVideo(next);
+
+        next.scrollIntoView({
             behavior: "smooth",
             block: "end",
         });
         Vibrate();
-    };
+    }
+
 
     function Player_Prev() {
-        let Container = FindCurrentContainer(-1);
-        if (!Container) { return };
+        if (!g_currentContainer) {
+            LOG("Player_Prev: !g_currentContainer");
+            return;
+        }
 
-        Container.scrollIntoView({
+        const prevId = parseInt(g_currentContainer.id) - 1;
+        if (isNaN(prevId)) {
+            LOG("Player_Prev: isNaN(prevId)");
+            return;
+        }
+
+        const prev = document.getElementById(prevId);
+        if (!prev) {
+            LOG("Player_Prev: !prev");
+            return;
+        }
+
+        seenReels.delete(prev);
+        g_currentContainer = prev;
+        g_currentVideo = GetCurrentVideo(prev);
+
+        prev.scrollIntoView({
             behavior: "smooth",
             block: "end",
         });
@@ -157,34 +215,44 @@ const Button_t = {
     };
 
     function Player_Like() {
-        let LikeButton = GetLikeButton(FindCurrentContainer());
-        if (!LikeButton) { return };
+        const LikeButton = GetLikeButton(g_currentContainer);
+        if (!LikeButton) {
+            LOG("Player_Like: !LikeButton");
+            return;
+        }
 
         LikeButton.click();
         Vibrate();
     };
 
     function Player_Dislike() {
-        let DisLikeButton = GetDisLikeButton(FindCurrentContainer());
-        if (!DisLikeButton) { return };
+        const DisLikeButton = GetDisLikeButton(g_currentContainer);
+        if (!DisLikeButton) {
+            LOG("Player_Dislike: !DisLikeButton");
+            return;
+        }
 
         DisLikeButton.click();
         Vibrate();
     };
 
     function Player_SeekForward() {
-        let video = GetCurrentVideo(FindCurrentContainer());
-        if (!video) { return };
+        if (!g_currentVideo) {
+            LOG("Player_SeekForward: !g_currentVideo");
+            return;
+        }
 
-        SetTime(video, +g_seekTime);
+        SetTime(g_currentVideo, +g_seekTime);
         Vibrate();
     };
 
     function Player_SeekBack() {
-        let video = GetCurrentVideo(FindCurrentContainer());
-        if (!video) { return };
+        if (!g_currentVideo) {
+            LOG("Player_SeekBack: !g_currentVideo");
+            return;
+        }
 
-        SetTime(video, -g_seekTime);
+        SetTime(g_currentVideo, -g_seekTime);
         Vibrate();
     };
 
@@ -201,8 +269,8 @@ const Button_t = {
     buttonBindings[Button_t.A] = Player_Next;
     buttonBindings[Button_t.X] = Player_Prev;
 
-    buttonBindings[Button_t.B] = Player_Like;
-    buttonBindings[Button_t.Y] = Player_Dislike;
+    buttonBindings[Button_t.Y] = Player_Like;
+    buttonBindings[Button_t.B] = Player_Dislike;
 
     buttonBindings[Button_t.ARROW_UP] = Player_Prev;
     buttonBindings[Button_t.ARROW_DOWN] = Player_Next;
@@ -227,6 +295,46 @@ const Button_t = {
         };
     };
 
+    ///////////////////////////////
+    // Main Shorts Update Worker //
+    ///////////////////////////////
+
+    const seenReels = new WeakSet();
+
+    function InitObserver() {
+        if (g_observer) g_observer.disconnect();
+
+        g_observer = new MutationObserver(() => {
+            if (!IsValidURL()) return;
+
+            const reels = document.getElementsByClassName("reel-video-in-sequence-new");
+            for (let i = 0; i < reels.length; i++) {
+                const reel = reels[i];
+                if (!seenReels.has(reel) && reel.querySelector("#reel-video-renderer")) {
+                    const CurrentVideo = GetCurrentVideo(reel);
+                    if (CurrentVideo) {
+                        seenReels.add(reel);
+
+                        g_currentContainer = reel;
+                        g_currentVideo = CurrentVideo;
+
+                        LOG(`Observer: New Container -> ${g_currentContainer.id}`);
+                        break;
+                    }
+                }
+            }
+        });
+
+        const waitForShortsContainer = setInterval(() => {
+            const container = document.getElementById("shorts-inner-container");
+            if (container) {
+                clearInterval(waitForShortsContainer);
+                g_observer.observe(container, { childList: true, subtree: true });
+                console.log("Наблюдение запущено");
+            }
+        }, 200);
+    }
+
     /////////////////////////
     // Main Buttons Worker //
     /////////////////////////
@@ -237,7 +345,7 @@ const Button_t = {
         const Gamepad = navigator.getGamepads()[g_gamepadIndex];
         Gamepad.buttons.map(e => e.pressed).forEach((isPressed, buttonIndex) => {
             if (isPressed) {
-                if (g_debug) { console.log(`[GPC] Pressed Button Index: ${buttonIndex}`) };
+                if (g_debug) { console.log(`[SGC] Pressed Button Index: ${buttonIndex}`) };
                 // Prevent multiple triggering
                 if (g_pressedButtonIndex == undefined) {
                     g_pressedButtonIndex = buttonIndex;
@@ -247,7 +355,6 @@ const Button_t = {
             else if (buttonIndex == g_pressedButtonIndex) {
                 g_pressedButtonIndex = undefined;
             };
-
         })
     }, 50);
 
@@ -256,15 +363,16 @@ const Button_t = {
     ////////////////////
 
     window.addEventListener('gamepadconnected', (event) => {
-        console.log(`[GPC] Gamepad Connected \n[GPC] Index: ${event.gamepad.index} \n[GPC] Name: ${event.gamepad.id}`);
+        console.log(`[SGC] Gamepad Connected \n[SGC] Index: ${event.gamepad.index} \n[SGC] Name: ${event.gamepad.id}`);
         g_gamepadIndex = event.gamepad.index;
     });
 
     window.addEventListener('gamepaddisconnected', (event) => {
         if (event.gamepad.index == g_gamepadIndex) {
-            console.log(`[GPC] Gamepad Disconnected \n[GPC] Index: ${event.gamepad.index} \n[GPC] Name: ${event.gamepad.id}`);
+            console.log(`[SGC] Gamepad Disconnected \n[SGC] Index: ${event.gamepad.index} \n[SGC] Name: ${event.gamepad.id}`);
             g_gamepadIndex = undefined;
         };
     });
 
+    InitObserver();
 })();
