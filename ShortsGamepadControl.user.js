@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      1.1.3
+// @version      1.1.4
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -52,7 +52,7 @@ const Button_t = {
     ///////////////////////
 
     function LOG(Message) {
-        console.error(`[GSC] ${Message}`);
+        console.error(`[SGC] ${Message}`);
     }
 
     function GetCurrentVideo(Container) {
@@ -61,7 +61,9 @@ const Button_t = {
             return undefined;
         }
 
-        const video = Container.querySelector("html5-video-player > div.html5-video-container > video");
+        console.log(Container);
+
+        const video = Container.querySelector("#shorts-player > div.html5-video-container > video")
         if (!video) {
             LOG("GetCurrentVideo: !video");
             return undefined;
@@ -253,7 +255,7 @@ const Button_t = {
     buttonBindings[Button_t.X] = Player_Prev;
 
     buttonBindings[Button_t.Y] = Player_Like;
-    buttonBindings[Button_t.B] = Player_Dislike;
+    // buttonBindings[Button_t.B] = Player_Dislike;
 
     buttonBindings[Button_t.ARROW_UP] = Player_Prev;
     buttonBindings[Button_t.ARROW_DOWN] = Player_Next;
