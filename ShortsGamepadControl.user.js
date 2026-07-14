@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      1.1.4
+// @version      1.1.5
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -51,8 +51,12 @@ const Button_t = {
     // Helpers Functions //
     ///////////////////////
 
-    function LOG(Message) {
-        console.error(`[SGC] ${Message}`);
+    function LOG(Message, debug_message = false) {
+        if (debug_message && g_debug) {
+            console.log(`[SGC] ${Message}`);
+        } else {
+            console.error(`[SGC] ${Message}`);
+        }
     }
 
     function GetCurrentVideo(Container) {
@@ -60,8 +64,6 @@ const Button_t = {
             LOG("GetCurrentVideo: !Container");
             return undefined;
         }
-
-        console.log(Container);
 
         const video = Container.querySelector("#shorts-player > div.html5-video-container > video")
         if (!video) {
@@ -88,33 +90,12 @@ const Button_t = {
         return button;
     };
 
-    function GetDisLikeButton(Container) {
-        if (!Container) {
-            LOG("GetDisLikeButton: !Container");
-            return undefined;
-        }
-
-        const button = Container.querySelector("#experiment-overlay > ytd-reel-player-overlay-renderer > yt-reel-player-overlay-view-model > div.ytReelPlayerOverlayViewModelActionsContainer > reel-action-bar-view-model > dislike-button-view-model > toggle-button-view-model > button-view-model > label > button > yt-touch-feedback-shape > div");
-        if (!button) {
-            LOG("GetDisLikeButton: !button");
-            return undefined;
-        }
-
-        return button;
-    };
-
-    function GetLikesCount() {
-        const likesContainer = document.querySelector("#like-button > yt-button-shape > label > div > span");
-        const likesCount = likesContainer.text;
-        return likesCount;
-    };
-
     function SetTime(video, time) {
-        let currentTime = video.currentTime; // Default HTML5 Video\Audio API -- https://www.w3schools.com/tags/ref_av_dom.asp
+        let currentTime = video.currentTime; // Default HTML5 Video/Audio API — https://www.w3schools.com/tags/ref_av_dom.asp
         video.currentTime = currentTime + time;
     };
 
-    // Tampermonkey's @match is such a headache
+    // Tampermonkey's @match not gonna work with SPA
     function IsValidURL() {
         return location.href.startsWith(`https://www.youtube.com/shorts/`);
     };
@@ -215,17 +196,6 @@ const Button_t = {
         Vibrate();
     };
 
-    function Player_Dislike() {
-        const DisLikeButton = GetDisLikeButton(g_currentContainer);
-        if (!DisLikeButton) {
-            LOG("Player_Dislike: !DisLikeButton");
-            return;
-        }
-
-        DisLikeButton.click();
-        Vibrate();
-    };
-
     function Player_SeekForward() {
         if (!g_currentVideo) {
             LOG("Player_SeekForward: !g_currentVideo");
@@ -251,11 +221,10 @@ const Button_t = {
     /////////////////////////////
 
     const buttonBindings = [];
-    buttonBindings[Button_t.A] = Player_Next;
-    buttonBindings[Button_t.X] = Player_Prev;
-
     buttonBindings[Button_t.Y] = Player_Like;
-    // buttonBindings[Button_t.B] = Player_Dislike;
+
+    buttonBindings[Button_t.X] = Player_Prev;
+    buttonBindings[Button_t.A] = Player_Next;
 
     buttonBindings[Button_t.ARROW_UP] = Player_Prev;
     buttonBindings[Button_t.ARROW_DOWN] = Player_Next;
@@ -269,9 +238,8 @@ const Button_t = {
     buttonBindings[Button_t.LT] = Player_PlayPause;
     buttonBindings[Button_t.RT] = Player_PlayPause;
 
-    // Call Button-Binded Function
     function HandleButton(buttonIndex) {
-        let Binding = buttonBindings[buttonIndex];
+        const Binding = buttonBindings[buttonIndex];
         if (Binding) {
             Binding()
         };
@@ -300,7 +268,7 @@ const Button_t = {
                         g_currentContainer = reel;
                         g_currentVideo = CurrentVideo;
 
-                        LOG(`Observer: New Container -> ${g_currentContainer.id}`);
+                        LOG(`Observer: New Container -> ${g_currentContainer.id}`, true);
                         break;
                     }
                 }
@@ -312,7 +280,6 @@ const Button_t = {
             if (container) {
                 clearInterval(waitForShortsContainer);
                 g_observer.observe(container, { childList: true, subtree: true });
-                console.log("Наблюдение запущено");
             }
         }, 200);
     }
@@ -327,14 +294,13 @@ const Button_t = {
         const Gamepad = navigator.getGamepads()[g_gamepadIndex];
         Gamepad.buttons.map(e => e.pressed).forEach((isPressed, buttonIndex) => {
             if (isPressed) {
-                if (g_debug) { console.log(`[SGC] Pressed Button Index: ${buttonIndex}`) };
+                LOG(`[SGC] Pressed Button Index: ${buttonIndex}`, true);
                 // Prevent multiple triggering
                 if (g_pressedButtonIndex == undefined) {
                     g_pressedButtonIndex = buttonIndex;
                     HandleButton(buttonIndex);
                 };
-            }
-            else if (buttonIndex == g_pressedButtonIndex) {
+            } else if (buttonIndex == g_pressedButtonIndex) {
                 g_pressedButtonIndex = undefined;
             };
         })
@@ -345,13 +311,13 @@ const Button_t = {
     ////////////////////
 
     window.addEventListener('gamepadconnected', (event) => {
-        console.log(`[SGC] Gamepad Connected \n[SGC] Index: ${event.gamepad.index} \n[SGC] Name: ${event.gamepad.id}`);
+        LOG(`[SGC] Gamepad Connected \n[SGC] Index: ${event.gamepad.index} \n[SGC] Name: ${event.gamepad.id}`, true);
         g_gamepadIndex = event.gamepad.index;
     });
 
     window.addEventListener('gamepaddisconnected', (event) => {
         if (event.gamepad.index == g_gamepadIndex) {
-            console.log(`[SGC] Gamepad Disconnected \n[SGC] Index: ${event.gamepad.index} \n[SGC] Name: ${event.gamepad.id}`);
+            LOG(`[SGC] Gamepad Disconnected \n[SGC] Index: ${event.gamepad.index} \n[SGC] Name: ${event.gamepad.id}`, true);
             g_gamepadIndex = undefined;
         };
     });
