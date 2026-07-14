@@ -5,10 +5,9 @@ Take a Full Control on Youtube Shorts with Gamepad
 - **A** / **Down**: Next Video  
 - **X** / **Up**: Previous Video  
 - **B**: Like  
-- **Y**: Dislike  
 - **LB** / **Left**: SeekBack  
 - **RB** / **Right**: SeekForward  
-- **LT** / **RT**: Play-Pause
+- **LT** / **RT**: Play/Pause
 
 # Different Gamepad
 If you have different gamepad / buttons indexes:  
