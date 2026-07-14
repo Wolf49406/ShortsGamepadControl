@@ -110,9 +110,7 @@ const Button_t = {
   }
 
   function Vibrate() {
-    if (!g_vibrate) {
-      return;
-    }
+    if (!g_vibrate) return;
 
     const Gamepad = navigator.getGamepads()[g_gamepadIndex];
     if (Gamepad.vibrationActuator && Gamepad.vibrationActuator.playEffect) {
@@ -283,9 +281,7 @@ const Button_t = {
             g_currentContainer = reel;
             g_currentVideo = CurrentVideo;
 
-            Logger.info(
-              `Observer: New Container -> ${g_currentContainer.id}`,
-            );
+            Logger.info(`Observer: New Container -> ${g_currentContainer.id}`);
             break;
           }
         }
