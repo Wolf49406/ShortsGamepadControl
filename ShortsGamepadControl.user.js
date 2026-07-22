@@ -166,32 +166,25 @@ const App = {
         current_video.currentTime = current_time + time;
       },
 
-      Next() {
-        const current_container = App.Actions.GetReels();
-        if (!current_container) {
-          App.Logger.error("Player Next: !current_container");
+      Seek(offset) {
+        const current_video = App.Actions.GetCurrentVideo();
+        if (!current_video) {
+          App.Logger.error("Player Seek: !current_video");
           return;
         }
 
-        const currentId = Number(current_container.id);
-        if (Number.isNaN(currentId)) {
-          App.Logger.error(
-            `Player Next: Invalid container id -> ${current_container.id}`,
-          );
+        App.Actions.Player.SetTime(current_video, offset);
+        App.Actions.Vibrate();
+      },
+
+      Like() {
+        const like_button = App.Actions.GetLikeButton();
+        if (!like_button) {
+          App.Logger.error("Player Like: !LikeButton");
           return;
         }
 
-        const next = document.getElementById(currentId + 1);
-        if (!next) {
-          App.Logger.error("Player Next: !next");
-          return;
-        }
-
-        next.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        });
-
+        like_button.click();
         App.Actions.Vibrate();
       },
 
@@ -226,25 +219,32 @@ const App = {
         App.Actions.Vibrate();
       },
 
-      Like() {
-        const like_button = App.Actions.GetLikeButton();
-        if (!like_button) {
-          App.Logger.error("Player Like: !LikeButton");
+      Next() {
+        const current_container = App.Actions.GetReels();
+        if (!current_container) {
+          App.Logger.error("Player Next: !current_container");
           return;
         }
 
-        like_button.click();
-        App.Actions.Vibrate();
-      },
-
-      Seek(offset) {
-        const current_video = App.Actions.GetCurrentVideo();
-        if (!current_video) {
-          App.Logger.error("Player Seek: !current_video");
+        const currentId = Number(current_container.id);
+        if (Number.isNaN(currentId)) {
+          App.Logger.error(
+            `Player Next: Invalid container id -> ${current_container.id}`,
+          );
           return;
         }
 
-        App.Actions.Player.SetTime(current_video, offset);
+        const next = document.getElementById(currentId + 1);
+        if (!next) {
+          App.Logger.error("Player Next: !next");
+          return;
+        }
+
+        next.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
+
         App.Actions.Vibrate();
       },
     },
@@ -284,7 +284,7 @@ const Button_t = {
 
   buttonBindings[Button_t.LT] = App.Actions.Player.PlayPause;
   buttonBindings[Button_t.RT] = App.Actions.Player.PlayPause;
-  
+
   buttonBindings[Button_t.X] = App.Actions.Player.Prev;
   buttonBindings[Button_t.A] = App.Actions.Player.Next;
 
@@ -295,7 +295,7 @@ const Button_t = {
   buttonBindings[Button_t.ARROW_RIGHT] = () => App.Actions.Player.Seek(+App.config.seek_time);
 
   buttonBindings[Button_t.LB] = () => App.Actions.Player.Seek(-App.config.seek_time);
-  buttonBindings[Button_t.RB] = () => App.Actions.Player.Seek(+App.config.seek_time);
+  buttonBindings[Button_t.RB] = () => aApp.Actions.Player.Seek(+App.config.seek_time);
 
   function HandleButton(buttonIndex) {
     const Binding = buttonBindings[buttonIndex];
