@@ -15,7 +15,7 @@ const App = {
   config: {
     seek_time: 3,
     vibrate: true,
-    debug: true,
+    debug: false,
   },
 
   state: {
