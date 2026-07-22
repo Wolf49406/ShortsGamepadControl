@@ -10,15 +10,15 @@ Take a Full Control on Youtube Shorts with Gamepad
 - **LT** / **RT**: Play/Pause
 
 # Different Gamepad
-If you have different gamepad / buttons indexes:  
-- Enable debugging with _g_debug_ variable
+If you have a different gamepad / buttons indexes:  
+- Enable debugging with _App.Config.debug_ variable
 - Open browser's console
 - Press buttons on your gamepad
 - Edit default enum _Button_t_
 
 # Settings
-- _g_seekTime_ for _SeekBack_ and _SeekForward_ time  
-- _g_vibrate_ to enable/disable vibration feedback  
+- _App.Config.seek_time_ for _SeekBack_ and _SeekForward_ time  
+- _App.Config.vibrate_ to enable/disable vibration feedback  
 
 # How To
 - Install [Tampermonkey](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
