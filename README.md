@@ -4,7 +4,7 @@ Take a Full Control on Youtube Shorts with Gamepad
 # Hotkeys (xbox gamepad)
 - **A** / **Down**: Next Video  
 - **X** / **Up**: Previous Video  
-- **B**: Like  
+- **B** / **Y**: Like  
 - **LB** / **Left**: SeekBack  
 - **RB** / **Right**: SeekForward  
 - **LT** / **RT**: Play/Pause

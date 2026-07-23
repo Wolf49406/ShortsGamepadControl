@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      2.0.0
+// @version      2.0.1
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -47,17 +47,14 @@ const App = {
   },
 
   Actions: {
-    ValidateURL() {
-      // Tampermonkey's @match not gonna work with SPA
-      return location.href.startsWith(`https://www.youtube.com/shorts/`);
-    },
+    ValidateURL: () => location.href.startsWith(`https://www.youtube.com/shorts/`),
 
-    GetReels() {
+    GetContainer() {
       const reels = document.getElementsByClassName(
         App.DOM.reel_video_in_sequence_new,
       );
       if (!reels || reels.length === 0) {
-        App.Logger.error("GetReels: !reels");
+        App.Logger.error("GetContainer: !reels");
         return null;
       }
 
@@ -79,7 +76,7 @@ const App = {
     },
 
     GetCurrentVideo() {
-      const current_container = App.Actions.GetReels();
+      const current_container = App.Actions.GetContainer();
       if (!current_container) {
         App.Logger.error("GetCurrentVideo: !current_container");
         return null;
@@ -95,7 +92,7 @@ const App = {
     },
 
     GetLikeButton() {
-      const current_container = App.Actions.GetReels();
+      const current_container = App.Actions.GetContainer();
       if (!current_container) {
         App.Logger.error("GetLikeButton: !current_container");
         return null;
@@ -189,7 +186,7 @@ const App = {
       },
 
       Prev() {
-        const current_container = App.Actions.GetReels();
+        const current_container = App.Actions.GetContainer();
         if (!current_container) {
           App.Logger.error("Player Prev: !current_container");
           return;
@@ -220,7 +217,7 @@ const App = {
       },
 
       Next() {
-        const current_container = App.Actions.GetReels();
+        const current_container = App.Actions.GetContainer();
         if (!current_container) {
           App.Logger.error("Player Next: !current_container");
           return;
@@ -278,28 +275,33 @@ const Button_t = {
   // Button Bindings //
   /////////////////////
 
-  const buttonBindings = [];
+  const button_bindings = [];
 
-  buttonBindings[Button_t.Y] = App.Actions.Player.Like;
+  button_bindings[Button_t.Y] = App.Actions.Player.Like;
+  button_bindings[Button_t.B] = App.Actions.Player.Like;
 
-  buttonBindings[Button_t.LT] = App.Actions.Player.PlayPause;
-  buttonBindings[Button_t.RT] = App.Actions.Player.PlayPause;
+  button_bindings[Button_t.LT] = App.Actions.Player.PlayPause;
+  button_bindings[Button_t.RT] = App.Actions.Player.PlayPause;
 
-  buttonBindings[Button_t.X] = App.Actions.Player.Prev;
-  buttonBindings[Button_t.A] = App.Actions.Player.Next;
+  button_bindings[Button_t.X] = App.Actions.Player.Prev;
+  button_bindings[Button_t.A] = App.Actions.Player.Next;
 
-  buttonBindings[Button_t.ARROW_UP] = App.Actions.Player.Prev;
-  buttonBindings[Button_t.ARROW_DOWN] = App.Actions.Player.Next;
+  button_bindings[Button_t.ARROW_UP] = App.Actions.Player.Prev;
+  button_bindings[Button_t.ARROW_DOWN] = App.Actions.Player.Next;
 
-  buttonBindings[Button_t.ARROW_LEFT] = () => App.Actions.Player.Seek(-App.config.seek_time);
-  buttonBindings[Button_t.ARROW_RIGHT] = () => App.Actions.Player.Seek(+App.config.seek_time);
+  button_bindings[Button_t.ARROW_LEFT] = () =>
+    App.Actions.Player.Seek(-App.config.seek_time);
+  button_bindings[Button_t.ARROW_RIGHT] = () =>
+    App.Actions.Player.Seek(+App.config.seek_time);
 
-  buttonBindings[Button_t.LB] = () => App.Actions.Player.Seek(-App.config.seek_time);
-  buttonBindings[Button_t.RB] = () => aApp.Actions.Player.Seek(+App.config.seek_time);
+  button_bindings[Button_t.LB] = () =>
+    App.Actions.Player.Seek(-App.config.seek_time);
+  button_bindings[Button_t.RB] = () =>
+    App.Actions.Player.Seek(+App.config.seek_time);
 
-  function HandleButton(buttonIndex) {
-    const Binding = buttonBindings[buttonIndex];
-    if (Binding) Binding();
+  function HandleButton(button_index) {
+    const binding = button_bindings[button_index];
+    if (binding) binding();
   }
 
   ////////////////////
@@ -307,7 +309,7 @@ const Button_t = {
   ////////////////////
 
   setInterval(() => {
-    if (App.state.gamepad_index === -1 || !App.Actions.ValidateURL()) return;
+    if (App.state.gamepad_index === -1 || !App.Actions.ValidateURL) return;
 
     const gamepad = navigator.getGamepads()[App.state.gamepad_index];
     if (!gamepad) {
@@ -334,7 +336,7 @@ const Button_t = {
   ////////////////////
 
   window.addEventListener("gamepadconnected", (event) => {
-    if (!App.Actions.ValidateURL()) return;
+    if (!App.Actions.ValidateURL) return;
 
     App.Logger.info(
       `Gamepad Connected; \nIndex: ${event.gamepad.index}; \nName: ${event.gamepad.id}`,
@@ -345,7 +347,7 @@ const Button_t = {
   });
 
   window.addEventListener("gamepaddisconnected", (event) => {
-    if (!App.Actions.ValidateURL()) return;
+    if (!App.Actions.ValidateURL) return;
 
     if (event.gamepad.index == App.state.gamepad_index) {
       App.Logger.info(
