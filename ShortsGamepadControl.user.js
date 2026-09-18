@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
 // @namespace    ytsgc
-// @version      2.0.2
+// @version      2.0.3
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -14,30 +14,31 @@
 
 const App = {
   config: {
-    seek_time: 3,
+    seekTime: 3,
     vibrate: true,
     debug: false,
   },
 
   state: {
     observer: null,
-    gamepad_index: -1,
-    pressed_button_index: -1,
-    seen_reels: null,
+    gamepadIndex: -1,
+    pressedButtonIndex: -1,
+    seenReels: null,
   },
 
   DOM: {
-    like_button:
-      "#experiment-overlay > ytd-reel-player-overlay-renderer > yt-reel-player-overlay-view-model > div.ytReelPlayerOverlayViewModelActionsContainer > reel-action-bar-view-model > like-button-view-model > toggle-button-view-model > button-view-model > label > button > yt-touch-feedback-shape > div",
-    shorts_inner_container: "shorts-inner-container",
+    likeButton: "#experiment-overlay > ytd-reel-player-overlay-renderer > yt-reel-player-overlay-view-model > div.ytReelPlayerOverlayViewModelActionsContainer > reel-action-bar-view-model > like-button-view-model > toggle-button-view-model > button-view-model > label > button > yt-touch-feedback-shape > div",
+    shortsInnerContainer: "shorts-inner-container",
     video: "#shorts-player > div.html5-video-container > video",
-    reel_video_in_sequence_new: "reel-video-in-sequence-new",
-    reel_video_renderer: "#reel-video-renderer",
+    reelVideoInSequenceNew: "reel-video-in-sequence-new",
+    reelVideoRenderer: "#reel-video-renderer",
   },
 
   Logger: {
     debug(message) {
-      if (App.config.debug) console.log(`[SGC] ${message}`);
+      if (App.config.debug) {
+        console.log(`[SGC] ${message}`);
+      }
     },
     info(message) {
       console.info(`[SGC] ${message}`);
@@ -48,27 +49,21 @@ const App = {
   },
 
   Actions: {
-    ValidateURL: () => location.href.startsWith(`https://www.youtube.com/shorts/`),
+    validateURL: () => location.href.startsWith(`https://www.youtube.com/shorts/`),
 
-    GetContainer() {
-      const reels = document.getElementsByClassName(
-        App.DOM.reel_video_in_sequence_new,
-      );
+    getContainer() {
+      const reels = document.getElementsByClassName(App.DOM.reelVideoInSequenceNew);
       if (!reels || reels.length === 0) {
-        App.Logger.error("GetContainer: !reels");
+        App.Logger.error("getContainer: !reels");
         return null;
       }
 
-      App.state.seen_reels = new WeakSet();
+      App.state.seenReels = new WeakSet();
 
       for (let i = 0; i < reels.length; i++) {
         const reel = reels[i];
-        if (
-          !App.state.seen_reels.has(reel) &&
-          reel.querySelector(App.DOM.reel_video_renderer)
-        ) {
-          App.state.seen_reels.add(reel);
-
+        if (!App.state.seenReels.has(reel) && reel.querySelector(App.DOM.reelVideoRenderer)) {
+          App.state.seenReels.add(reel);
           return reel;
         }
       }
@@ -76,51 +71,53 @@ const App = {
       return null;
     },
 
-    GetCurrentVideo() {
-      const current_container = App.Actions.GetContainer();
-      if (!current_container) {
-        App.Logger.error("GetCurrentVideo: !current_container");
+    getCurrentVideo() {
+      const currentContainer = App.Actions.getContainer();
+      if (!currentContainer) {
+        App.Logger.error("getCurrentVideo: !currentContainer");
         return null;
       }
 
-      const video = current_container.querySelector(App.DOM.video);
+      const video = currentContainer.querySelector(App.DOM.video);
       if (!video) {
-        App.Logger.error("GetCurrentVideo: !video");
+        App.Logger.error("getCurrentVideo: !video");
         return null;
       }
 
       return video;
     },
 
-    GetLikeButton() {
-      const current_container = App.Actions.GetContainer();
-      if (!current_container) {
-        App.Logger.error("GetLikeButton: !current_container");
+    getLikeButton() {
+      const currentContainer = App.Actions.getContainer();
+      if (!currentContainer) {
+        App.Logger.error("getLikeButton: !currentContainer");
         return null;
       }
 
-      const button = current_container.querySelector(App.DOM.like_button);
+      const button = currentContainer.querySelector(App.DOM.likeButton);
       if (!button) {
-        App.Logger.error("GetLikeButton: !button");
+        App.Logger.error("getLikeButton: !button");
         return null;
       }
 
       return button;
     },
 
-    InitApp() {
-      if (App.state.observer) App.state.observer.disconnect();
+    initApp() {
+      if (App.state.observer){
+        App.state.observer.disconnect();
+      }
 
       App.state.observer = new MutationObserver(() => {
         App.Logger.debug("MutationObserver: DOM Changed");
       });
 
-      const WaitForShortsContainer = setInterval(() => {
+      const waitForShortsContainer = setInterval(() => {
         const container = document.getElementById(
-          App.DOM.shorts_inner_container,
+          App.DOM.shortsInnerContainer,
         );
         if (container) {
-          clearInterval(WaitForShortsContainer);
+          clearInterval(waitForShortsContainer);
           App.state.observer.observe(container, {
             childList: true,
             subtree: true,
@@ -129,12 +126,14 @@ const App = {
       }, 200);
     },
 
-    Vibrate() {
-      if (!App.config.vibrate || App.state.gamepad_index === -1) return;
+    vibrate() {
+      if (!App.config.vibrate || App.state.gamepadIndex === -1) {
+        return;
+      }
 
-      const gamepad = navigator.getGamepads()[App.state.gamepad_index];
+      const gamepad = navigator.getGamepads()[App.state.gamepadIndex];
       if (!gamepad) {
-        App.Logger.error("Vibrate: Gamepad not found");
+        App.Logger.error("vibrate: Gamepad not found");
         return;
       }
 
@@ -148,93 +147,89 @@ const App = {
     },
 
     Player: {
-      PlayPause() {
-        const current_video = App.Actions.GetCurrentVideo();
-        if (!current_video) {
-          App.Logger.error("Player PlayPause: !current_video");
+      playPause() {
+        const currentVideo = App.Actions.getCurrentVideo();
+        if (!currentVideo) {
+          App.Logger.error("Player playPause: !currentVideo");
           return;
         }
 
-        current_video.paused ? current_video.play() : current_video.pause();
-        App.Actions.Vibrate();
+        currentVideo.paused ? currentVideo.play() : currentVideo.pause();
+        App.Actions.vibrate();
       },
 
-      SetTime(current_video, time) {
-        let current_time = current_video.currentTime; // Default HTML5 Video/Audio API — https://www.w3schools.com/tags/ref_av_dom.asp
-        current_video.currentTime = current_time + time;
+      setTime(currentVideo, time) {
+        let currentTime = currentVideo.currentTime; // Default HTML5 Video/Audio API — https://www.w3schools.com/tags/ref_av_dom.asp
+        currentVideo.currentTime = currentTime + time;
       },
 
-      Seek(offset) {
-        const current_video = App.Actions.GetCurrentVideo();
-        if (!current_video) {
-          App.Logger.error("Player Seek: !current_video");
+      seek(offset) {
+        const currentVideo = App.Actions.getCurrentVideo();
+        if (!currentVideo) {
+          App.Logger.error("Player seek: !currentVideo");
           return;
         }
 
-        App.Actions.Player.SetTime(current_video, offset);
-        App.Actions.Vibrate();
+        App.Actions.Player.setTime(currentVideo, offset);
+        App.Actions.vibrate();
       },
 
-      Like() {
-        const like_button = App.Actions.GetLikeButton();
-        if (!like_button) {
-          App.Logger.error("Player Like: !LikeButton");
+      like() {
+        const likeButton = App.Actions.getLikeButton();
+        if (!likeButton) {
+          App.Logger.error("Player like: !likeButton");
           return;
         }
 
-        like_button.click();
-        App.Actions.Vibrate();
+        likeButton.click();
+        App.Actions.vibrate();
       },
 
-      Prev() {
-        const current_container = App.Actions.GetContainer();
-        if (!current_container) {
-          App.Logger.error("Player Prev: !current_container");
+      prev() {
+        const currentContainer = App.Actions.getContainer();
+        if (!currentContainer) {
+          App.Logger.error("Player prev: !currentContainer");
           return;
         }
 
-        const currentId = Number(current_container.id);
+        const currentId = Number(currentContainer.id);
         if (Number.isNaN(currentId) || currentId <= 0) {
-          App.Logger.error(
-            `Player Prev: Invalid container id -> ${current_container.id}`,
-          );
+          App.Logger.error(`Player prev: Invalid container id -> ${currentContainer.id}`);
           return;
         }
 
         const prev = document.getElementById(currentId - 1);
         if (!prev) {
-          App.Logger.error("Player Prev: !prev");
+          App.Logger.error("Player prev: !prev");
           return;
         }
 
-        App.state.seen_reels.delete(prev);
+        App.state.seenReels.delete(prev);
 
         prev.scrollIntoView({
           behavior: "smooth",
           block: "end",
         });
 
-        App.Actions.Vibrate();
+        App.Actions.vibrate();
       },
 
-      Next() {
-        const current_container = App.Actions.GetContainer();
-        if (!current_container) {
-          App.Logger.error("Player Next: !current_container");
+      next() {
+        const currentContainer = App.Actions.getContainer();
+        if (!currentContainer) {
+          App.Logger.error("Player next: !currentContainer");
           return;
         }
 
-        const currentId = Number(current_container.id);
+        const currentId = Number(currentContainer.id);
         if (Number.isNaN(currentId)) {
-          App.Logger.error(
-            `Player Next: Invalid container id -> ${current_container.id}`,
-          );
+          App.Logger.error(`Player next: Invalid container id -> ${currentContainer.id}`);
           return;
         }
 
         const next = document.getElementById(currentId + 1);
         if (!next) {
-          App.Logger.error("Player Next: !next");
+          App.Logger.error("Player next: !next");
           return;
         }
 
@@ -243,13 +238,13 @@ const App = {
           block: "end",
         });
 
-        App.Actions.Vibrate();
+        App.Actions.vibrate();
       },
     },
   },
 };
 
-const Button_t = {
+const BUTTON_T = {
   A: 0,
   B: 1,
   X: 2,
@@ -276,32 +271,28 @@ const Button_t = {
   // Button Bindings //
   /////////////////////
 
-  const button_bindings = [];
+  const buttonBindings = [];
 
-  button_bindings[Button_t.Y] = App.Actions.Player.Like;
-  button_bindings[Button_t.B] = App.Actions.Player.Like;
+  buttonBindings[BUTTON_T.Y] = App.Actions.Player.like;
+  buttonBindings[BUTTON_T.B] = App.Actions.Player.like;
 
-  button_bindings[Button_t.LT] = App.Actions.Player.PlayPause;
-  button_bindings[Button_t.RT] = App.Actions.Player.PlayPause;
+  buttonBindings[BUTTON_T.LT] = App.Actions.Player.playPause;
+  buttonBindings[BUTTON_T.RT] = App.Actions.Player.playPause;
 
-  button_bindings[Button_t.X] = App.Actions.Player.Prev;
-  button_bindings[Button_t.A] = App.Actions.Player.Next;
+  buttonBindings[BUTTON_T.X] = App.Actions.Player.prev;
+  buttonBindings[BUTTON_T.A] = App.Actions.Player.next ;
 
-  button_bindings[Button_t.ARROW_UP] = App.Actions.Player.Prev;
-  button_bindings[Button_t.ARROW_DOWN] = App.Actions.Player.Next;
+  buttonBindings[BUTTON_T.ARROW_UP] = App.Actions.Player.prev;
+  buttonBindings[BUTTON_T.ARROW_DOWN] = App.Actions.Player.next;
 
-  button_bindings[Button_t.ARROW_LEFT] = () =>
-    App.Actions.Player.Seek(-App.config.seek_time);
-  button_bindings[Button_t.ARROW_RIGHT] = () =>
-    App.Actions.Player.Seek(+App.config.seek_time);
+  buttonBindings[BUTTON_T.ARROW_LEFT] = () => App.Actions.Player.seek(-App.config.seekTime);
+  buttonBindings[BUTTON_T.ARROW_RIGHT] = () => App.Actions.Player.seek(+App.config.seekTime);
 
-  button_bindings[Button_t.LB] = () =>
-    App.Actions.Player.Seek(-App.config.seek_time);
-  button_bindings[Button_t.RB] = () =>
-    App.Actions.Player.Seek(+App.config.seek_time);
+  buttonBindings[BUTTON_T.LB] = () => App.Actions.Player.seek(-App.config.seekTime);
+  buttonBindings[BUTTON_T.RB] = () => App.Actions.Player.seek(+App.config.seekTime);
 
-  function HandleButton(button_index) {
-    const binding = button_bindings[button_index];
+  function handleButton(buttonIndex) {
+    const binding = buttonBindings[buttonIndex];
     if (binding) binding();
   }
 
@@ -310,9 +301,11 @@ const Button_t = {
   ////////////////////
 
   setInterval(() => {
-    if (App.state.gamepad_index === -1 || !App.Actions.ValidateURL) return;
+    if (App.state.gamepadIndex === -1 || !App.Actions.validateURL()) {
+        return;
+    }
 
-    const gamepad = navigator.getGamepads()[App.state.gamepad_index];
+    const gamepad = navigator.getGamepads()[App.state.gamepadIndex];
     if (!gamepad) {
       App.Logger.error("setInterval: Gamepad not found");
       return;
@@ -321,13 +314,13 @@ const Button_t = {
     for (let index = 0; index < gamepad.buttons.length; index++) {
       const isPressed = gamepad.buttons[index].pressed;
       if (isPressed) {
-        if (App.state.pressed_button_index === -1) {
+        if (App.state.pressedButtonIndex === -1) {
           App.Logger.debug(`Pressed Button Index: ${index}`);
-          App.state.pressed_button_index = index;
-          HandleButton(index);
+          App.state.pressedButtonIndex = index;
+          handleButton(index);
         }
-      } else if (index === App.state.pressed_button_index) {
-        App.state.pressed_button_index = -1;
+      } else if (index === App.state.pressedButtonIndex) {
+        App.state.pressedButtonIndex = -1;
       }
     }
   }, 50);
@@ -337,26 +330,26 @@ const Button_t = {
   ////////////////////
 
   window.addEventListener("gamepadconnected", (event) => {
-    if (!App.Actions.ValidateURL) return;
+    if (!App.Actions.validateURL()) {
+        return;
+    }
 
-    App.Logger.info(
-      `Gamepad Connected; \nIndex: ${event.gamepad.index}; \nName: ${event.gamepad.id}`,
-    );
-
-    App.state.gamepad_index = event.gamepad.index;
+    App.Logger.info(`Gamepad Connected; \nIndex: ${event.gamepad.index}; \nName: ${event.gamepad.id}`);
+    App.state.gamepadIndex = event.gamepad.index;
     App.Actions.InitApp();
   });
 
   window.addEventListener("gamepaddisconnected", (event) => {
-    if (!App.Actions.ValidateURL) return;
+    if (!App.Actions.validateURL()) {
+        return;
+    }
 
-    if (event.gamepad.index == App.state.gamepad_index) {
-      App.Logger.info(
-        `Gamepad Disconnected; \nIndex: ${event.gamepad.index}; \nName: ${event.gamepad.id}`,
-      );
-
-      App.state.gamepad_index = -1;
-      if (App.state.observer) App.state.observer.disconnect();
+    if (event.gamepad.index == App.state.gamepadIndex) {
+      App.Logger.info(`Gamepad Disconnected; \nIndex: ${event.gamepad.index}; \nName: ${event.gamepad.id}`);
+      App.state.gamepadIndex = -1;
+      if (App.state.observer) {
+        App.state.observer.disconnect();
+      }
     }
   });
 })();
