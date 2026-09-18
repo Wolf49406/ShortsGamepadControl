@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
-// @version      2.0.1
+// @namespace    ytsgc
+// @version      2.0.2
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
