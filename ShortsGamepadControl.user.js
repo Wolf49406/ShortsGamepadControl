@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Shorts Gamepad Control
 // @namespace    ytsgc
-// @version      2.0.3
+// @version      2.0.4
 // @description  Take a Full Control on Youtube Shorts with Gamepad
 // @author       https://github.com/Wolf49406
 // @match        http*://www.youtube.com/*
@@ -27,7 +27,7 @@ const App = {
   },
 
   DOM: {
-    likeButton: "#experiment-overlay > ytd-reel-player-overlay-renderer > yt-reel-player-overlay-view-model > div.ytReelPlayerOverlayViewModelActionsContainer > reel-action-bar-view-model > like-button-view-model > toggle-button-view-model > button-view-model > label > button > yt-touch-feedback-shape > div",
+    likeButton: "#experiment-overlay > ytd-reel-player-overlay-renderer-cow > yt-reel-player-overlay-view-model > div.ytReelPlayerOverlayViewModelActionsContainer > reel-action-bar-view-model > like-button-view-model > toggle-button-view-model > button-view-model > label > button > yt-touch-feedback-shape > div",
     shortsInnerContainer: "shorts-inner-container",
     video: "#shorts-player > div.html5-video-container > video",
     reelVideoInSequenceNew: "reel-video-in-sequence-new",
